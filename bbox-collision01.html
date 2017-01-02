@@ -1,0 +1,82 @@
+
+<html>
+<head>
+  <title>bbox collision 01</title>
+  <meta charset="utf-8" />
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="bbox-collide.js"></script>
+</head>
+<style>
+  svg {
+    height: 500px;
+    width: 500px;
+    border: 1px solid lightgray;
+  }
+</style>
+<body>
+
+<div id="viz">
+  <svg class="main">
+  </svg>
+</div>
+</body>
+  <footer>
+<script>
+
+
+var randomPoints = d3.range(500).map(function () {
+  return {value: Math.random()}
+})
+
+var networkCenter = d3.forceCenter().x(250).y(250);
+
+var forceX = d3.forceX(function (d) {return 100})
+    .strength(0.1)
+
+ var forceY = d3.forceY(function (d) {return d.value * 500})
+    .strength(1)
+
+var collide = d3.bboxCollide(function (d,i) {
+    return [[-d.value * 10, -d.value * 5],[d.value * 10, d.value * 5]]
+  })
+  .strength(1)
+  .iterations(2)
+
+var color = d3.scaleOrdinal(d3.schemeCategory20b)
+
+  var force = d3.forceSimulation(randomPoints)
+    .velocityDecay(0.6)
+    .force("center", networkCenter)
+    .force("x", forceX)
+    .force("y", forceY)
+    .force("collide", collide)
+    .on("tick", updateNetwork);
+
+  var nodeEnter = d3.select("svg.main")
+  .append("g")
+  .selectAll("g.node")
+  .data(randomPoints)
+  .enter()
+  .append("g")
+  .attr("class", "node")
+
+  nodeEnter.append("rect")
+    .attr("class", "base")
+    .style("fill-opacity", 0.75)
+    .style("stroke-width", 1)
+    .style("stroke-opacity", 0.5)
+    .style("stroke", function (d, i) {return d3.color(color(i)).darker(2)})
+    .style("fill", function (d, i) {return d3.color(color(i)).brighter(2)})
+    .style("width", function (d) {return d.value * 20})
+    .style("height", function (d) {return d.value * 10})
+    .style("x", function (d) {return -d.value * 10})
+    .style("y", function (d) {return -d.value * 5})
+
+  function updateNetwork() {
+    d3.select("svg.main").selectAll("g.node")
+      .attr("transform", function (d) {return "translate(" + d.x + "," + d.y + ")"})
+  }
+</script>
+  </footer>
+
+</html>
